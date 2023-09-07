@@ -1,4 +1,4 @@
-FROM golang:1.18.6 as builder
+FROM public-cn-beijing.cr.volces.com/public/golang:alpine as builder
 # 指定构建过程中的工作目录
 WORKDIR /app
 # 将当前目录（dockerfile所在目录）下所有文件都拷贝到工作目录下（.dockerignore中文件除外）
@@ -16,5 +16,7 @@ COPY --from=builder /app /opt/application
 USER root
 
 RUN chmod 777 run.sh
+
+EXPOSE 8000
 
 #CMD /opt/application/run.sh
