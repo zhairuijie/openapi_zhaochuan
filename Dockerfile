@@ -15,8 +15,8 @@ COPY --from=builder /app/douyincloud /app/run.sh /opt/application/
 
 USER root
 
-RUN chmod -R 777 /opt/application/run.sh
-
 CMD ls -l /opt/application
+
+RUN chmod -R 777 /opt/application/run.sh
 
 #CMD /opt/application/run.sh

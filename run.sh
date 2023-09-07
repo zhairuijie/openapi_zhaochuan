@@ -1,2 +1,3 @@
-#!/bin/sh
-/opt/application/douyincloud
+#!/bin/bash
+cd /opt/application
+douyincloud
