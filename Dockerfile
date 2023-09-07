@@ -11,12 +11,10 @@ FROM public-cn-beijing.cr.volces.com/public/base:alpine-3.13
 
 WORKDIR /opt/application
 
-COPY --from=builder /app/douyincloud /app/run.sh /opt/application/
+COPY --from=builder /app /opt/application
 
 USER root
 
-CMD ls -l /opt/application
-
-RUN chmod -R 777 /opt/application/run.sh
+RUN chmod 777 run.sh
 
 #CMD /opt/application/run.sh
