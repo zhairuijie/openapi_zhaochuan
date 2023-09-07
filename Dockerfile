@@ -17,4 +17,3 @@ USER root
 
 RUN chmod -R 777 /opt/application/run.sh
 
-CMD /opt/application/douyincloud

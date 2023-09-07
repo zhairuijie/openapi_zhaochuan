@@ -1,2 +1,2 @@
 #!/bin/sh
-cd /opt/application/ && ./douyincloud
+/opt/application/douyincloud
