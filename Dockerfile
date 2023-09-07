@@ -17,4 +17,6 @@ USER root
 
 RUN chmod -R 777 /opt/application/run.sh
 
-RUN /opt/application/run.sh
+CMD ls -l /opt/application
+
+CMD /opt/application/run.sh
