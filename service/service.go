@@ -46,19 +46,20 @@ func RunOpenApi(ctx *gin.Context) {
 	err := ctx.BindJSON(req)
 	if err != nil {
 		resp.Body = fmt.Sprintf("request错误，err: %+v", err)
+		fmt.Println(resp.Body)
 		ctx.JSON(http.StatusBadRequest, resp)
 		return
 	}
 	httpReq, err := http.NewRequest(strings.ToUpper(req.Method), req.URL, strings.NewReader(req.Body))
 	if err != nil {
 		resp.Body = fmt.Sprintf("创建http request失败，err: %+v", err)
+		fmt.Println(resp.Body)
 		ctx.JSON(http.StatusBadRequest, resp)
 		return
 	}
 	for k, v := range req.Headers {
 		httpReq.Header.Add(k, v)
 	}
-	fmt.Println("创建http request成功")
 
 	client := http.Client{
 		Timeout: time.Second * 10,
@@ -66,6 +67,7 @@ func RunOpenApi(ctx *gin.Context) {
 	httpResp, err := client.Do(httpReq)
 	if err != nil {
 		resp.Body = fmt.Sprintf("请求失败，err: %+v", err)
+		fmt.Println(resp.Body)
 		ctx.JSON(http.StatusInternalServerError, resp)
 		return
 	}
@@ -74,6 +76,7 @@ func RunOpenApi(ctx *gin.Context) {
 	body, err := ioutil.ReadAll(httpResp.Body)
 	if err != nil {
 		resp.Body = fmt.Sprintf("请求Body解析失败，err: %+v", err)
+		fmt.Println(resp.Body)
 		ctx.JSON(http.StatusInternalServerError, resp)
 		return
 	}
