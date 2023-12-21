@@ -15,6 +15,11 @@ COPY --from=builder /app /opt/application
 
 USER root
 
+ENV DOUYINCLOUD_CERT_PATH=/usr/local/share/ca-certificates/douyincloud_egress.crt
+RUN apk add ca-certificates wget
+RUN wget https://raw.githubusercontent.com/bytedance/douyincloud_cert/master/douyincloud_egress.crt -O $DOUYINCLOUD_CERT_PATH
+RUN update-ca-certificates
+
 RUN chmod 777 run.sh
 
 EXPOSE 8000

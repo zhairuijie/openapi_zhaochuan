@@ -16,82 +16,71 @@ limitations under the License.
 package service
 
 import (
-	"douyincloud-gin-demo/component"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/gin-gonic/gin"
 )
 
-func Hello(ctx *gin.Context) {
-	target := ctx.Query("target")
-	if target == "" {
-		Failure(ctx, fmt.Errorf("param invalid"))
-		return
+type Request struct {
+	URL     string            `json:"url"`
+	Method  string            `json:"method"`
+	Headers map[string]string `json:"headers"`
+	Body    string            `json:"body"`
+}
+
+type Response struct {
+	Body    string            `json:"body"`
+	Headers map[string]string `json:"headers,omitempty"`
+}
+
+func RunOpenApi(ctx *gin.Context) {
+	req := &Request{}
+	resp := &Response{
+		Headers: make(map[string]string),
 	}
-	fmt.Printf("target= %s\n", target)
-	hello, err := component.GetComponent(target)
+
+	err := ctx.BindJSON(req)
 	if err != nil {
-		Failure(ctx, fmt.Errorf("param invalid"))
+		resp.Body = fmt.Sprintf("request错误，err: %+v", err)
+		ctx.JSON(http.StatusBadRequest, resp)
 		return
 	}
-
-	name, err := hello.GetName(ctx, "name")
+	httpReq, err := http.NewRequest(strings.ToUpper(req.Method), req.URL, strings.NewReader(req.Body))
 	if err != nil {
-		Failure(ctx, err)
+		resp.Body = fmt.Sprintf("创建http request失败，err: %+v", err)
+		ctx.JSON(http.StatusBadRequest, resp)
 		return
 	}
-	Success(ctx, name)
-}
+	for k, v := range req.Headers {
+		httpReq.Header.Add(k, v)
+	}
+	fmt.Println("创建http request成功")
 
-func SetName(ctx *gin.Context) {
-	var req SetNameReq
-	err := ctx.Bind(&req)
+	client := http.Client{
+		Timeout: time.Second * 10,
+	}
+	httpResp, err := client.Do(httpReq)
 	if err != nil {
-		Failure(ctx, err)
+		resp.Body = fmt.Sprintf("请求失败，err: %+v", err)
+		ctx.JSON(http.StatusInternalServerError, resp)
 		return
 	}
-	hello, err := component.GetComponent(req.Target)
+
+	defer httpResp.Body.Close()
+	body, err := ioutil.ReadAll(httpResp.Body)
 	if err != nil {
-		Failure(ctx, fmt.Errorf("param invalid"))
+		resp.Body = fmt.Sprintf("请求Body解析失败，err: %+v", err)
+		ctx.JSON(http.StatusInternalServerError, resp)
 		return
 	}
-	err = hello.SetName(ctx, "name", req.Name)
-	if err != nil {
-		Failure(ctx, err)
-		return
+	resp.Body = string(body)
+	for k, v := range httpResp.Header {
+		resp.Headers[k] = strings.Join(v, ",")
 	}
-	Success(ctx, "")
-}
-
-func Failure(ctx *gin.Context, err error) {
-	resp := &Resp{
-		ErrNo:  -1,
-		ErrMsg: err.Error(),
-	}
-	ctx.JSON(200, resp)
-}
-
-func Success(ctx *gin.Context, data string) {
-	resp := &Resp{
-		ErrNo:  0,
-		ErrMsg: "success",
-		Data:   data,
-	}
-	ctx.JSON(200, resp)
-}
-
-type HelloResp struct {
-	ErrNo  int    `json:"err_no"`
-	ErrMsg string `json:"err_msg"`
-	Data   string `json:"data"`
-}
-
-type SetNameReq struct {
-	Target string `json:"target"`
-	Name   string `json:"name"`
-}
-
-type Resp struct {
-	ErrNo  int         `json:"err_no"`
-	ErrMsg string      `json:"err_msg"`
-	Data   interface{} `json:"data"`
+	ctx.JSON(http.StatusOK, resp)
+	return
 }
