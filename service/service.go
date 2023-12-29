@@ -37,6 +37,23 @@ type Response struct {
 	Headers map[string]string `json:"headers,omitempty"`
 }
 
+var client = &http.Client{
+	Transport: &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		DialContext: (&net.Dialer{
+			Timeout:   10 * time.Second,
+			KeepAlive: 10 * time.Second,
+		}).DialContext,
+		ForceAttemptHTTP2:     false,
+		MaxIdleConns:          2000,
+		MaxIdleConnsPerHost:   1000,
+		MaxConnsPerHost:       2000,
+		IdleConnTimeout:       10 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	},
+}
+
 func RunOpenApi(ctx *gin.Context) {
 	req := &Request{}
 	resp := &Response{
@@ -61,9 +78,6 @@ func RunOpenApi(ctx *gin.Context) {
 		httpReq.Header.Add(k, v)
 	}
 
-	client := http.Client{
-		Timeout: time.Second * 10,
-	}
 	httpResp, err := client.Do(httpReq)
 	if err != nil {
 		resp.Body = fmt.Sprintf("请求失败，err: %+v", err)
