@@ -24,15 +24,27 @@ import (
 	"time"
 )
 
-func main() {
-	ticker := time.NewTicker(2 * time.Second)
-	defer ticker.Stop()
+func logPeriodically() {
+    ticker := time.NewTicker(2 * time.Second)
+    defer ticker.Stop()
 
-	for {
-		select {
-		case <-ticker.C:
-			// 打印日志
-			fmt.Println("定时日志：", time.Now())
-		}
-	}
+    for {
+        select {
+        case <-ticker.C:
+            fmt.Println("定时日志：", time.Now())
+        }
+    }
+}
+
+func main() {
+	
+	go logPeriodically()
+	
+	r := gin.Default()
+
+	r.POST("/api/open_api", service.RunOpenApi)
+
+	log.Println("Server init success")
+	r.Run(":8000")
+	time.Sleep(5 * time.Second)
 }
