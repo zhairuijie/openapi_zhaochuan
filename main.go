@@ -31,7 +31,7 @@ func logPeriodically() {
     for {
         select {
         case <-ticker.C:
-            fmt.Println("定时日志：", time.Now())
+            log.Println("定时日志：", time.Now())
         }
     }
 }
