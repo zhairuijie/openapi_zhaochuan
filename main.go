@@ -25,13 +25,6 @@ import (
 )
 
 func main() {
-	r := gin.Default()
-
-	r.POST("/api/open_api", service.RunOpenApi)
-
-	log.Println("Server init success")
-	r.Run(":8000")
-	
 	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
 
