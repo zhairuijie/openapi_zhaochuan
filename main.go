@@ -20,6 +20,8 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
+	"fmt"
+	"time"
 )
 
 func main() {
@@ -29,4 +31,15 @@ func main() {
 
 	log.Println("Server init success")
 	r.Run(":8000")
+	
+	ticker := time.NewTicker(2 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			// 打印日志
+			fmt.Println("定时日志：", time.Now())
+		}
+	}
 }
